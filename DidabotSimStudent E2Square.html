@@ -1,0 +1,47 @@
+<!--
+Copyright 2016 Harmen de Weerd
+Copyright 2017 Johannes Keyser
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Didabots</title>
+    <script language="JavaScript" src="mouse.js"></script>
+    <script language="JavaScript" src="graphics.js"></script>
+    <script language="JavaScript" src="didabot_sim_student.js"></script>
+    <script language="JavaScript" src="matter.js"></script>
+    <script language="JavaScript" src="require.js"></script>
+  </head>
+  <body onload="init();">
+    <canvas id="arenaDidabot" width="450" height="450" style="cursor: initial;"></canvas>
+    <br>
+    <table border="0">
+      <tbody>
+        <tr><th colspan="2" align="center">Simulation properties</th><td></td></tr>
+        <tr><td>Simulation steps: <span id="SimStepLabel"></span></td></tr>
+        </tr>
+        <tr><br></tr>
+        <tr><th colspan="2" align="center">Selected robot info</th></tr>
+        <tr>
+          <td colspan="1" align="center">
+            <canvas id="bayDidabot" width="110" height="110" style="border:solid 2px black;"></canvas>
+          </td>
+          <td>Sensor values<span id="SensorLabel"></span></td>
+        </tr>
+      </tbody></table>
+  </body>
+</html>
