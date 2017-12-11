@@ -29,6 +29,9 @@ boxesMoved = [];
 lastPositions = [];
 //fs = null;
 
+var leftWeights = [0,0]
+var rightWeights = [0,0]
+
 // Description of robot(s), and attached sensor(s) used by InstantiateRobot()
 const sensorlength = 30;
 
@@ -551,28 +554,70 @@ function getSensorValById(robot, id) {
 
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
+
+  function coinFlip(outcome) {
+    //outcome is the real value
+    var sum = 0
+    for (var i = 0; i <= 5; i++) {
+      sum += Math.floor(Math.random() * 2) == outcome;
+    }
+    return sum == 0
+  }
+
   robotUpdateSensors(robot)
   rightSens = robot.sensors[0];
   leftSens = robot.sensors[1];
 
-  leftDist = leftSens.value.dist == Infinity ? leftSens.maxVal : leftSens.value.dist;
-  rightDist = rightSens.value.dist == Infinity ? rightSens.maxVal :  rightSens.value.dist;
+  leftDist = leftSens.value.dist == Infinity ? 0 : leftSens.value.dist;
+  rightDist = rightSens.value.dist == Infinity ? 0 :  rightSens.value.dist;
   leftTouch = leftSens.value.touch
   rightTouch = rightSens.value.touch
 
-  const angle = 0.005;
-  const forward = 0.0004;
+  // Neural Awesomeness
+  var threshold = 1
+  var learningRate = 0.001
+  var forgetRate = 0
 
-  leftTotal = (leftDist + 0.3 * Math.random() - 0.3 * Math.random())
-  rightTotal = (rightDist + 0.3 * Math.random() - 0.3 * Math.random())
+  leftCollision = (leftTouch + (leftWeights[0]*leftDist +      leftWeights[1]*rightDist)) >= threshold
+  rightCollision = (rightTouch + (rightWeights[0]*leftDist + rightWeights[1]*rightDist)) >= threshold
 
-  leftAngle = leftTotal * angle;
-  rightAngle = rightTotal * angle;
+  learningRate = Math.abs(leftCollision-rightCollision) * learningRate
 
-  direction = 0 - leftAngle + rightAngle; //rotates faster when far away
+  leftUpdate_0 = learningRate * leftDist * leftCollision
+  leftForget_0 = forgetRate * leftCollision * leftWeights[0]
+  leftWeights[0] = leftWeights[0] + (leftUpdate_0 - leftForget_0)
+
+  // Disabled cross connection learning
+  // leftUpdate_1 = learningRate * rightDist * leftCollision
+  // leftForget_1 = forgetRate * leftCollision * leftWeights[1]
+  // leftWeights[1] = leftWeights[1] + (leftUpdate_1 - leftForget_1)
+  //
+  // rightUpdate_0 = learningRate * leftDist * rightCollision
+  // rightForget_0 = forgetRate * rightCollision * rightWeights[0]
+  // rightWeights[0] = rightWeights[0] + (rightUpdate_0 - rightForget_0)
+
+  rightUpdate_1 = learningRate * rightDist * rightCollision
+  rightForget_1 = forgetRate * rightCollision * rightWeights[1]
+  rightWeights[1] = rightWeights[1] + (rightUpdate_1 - rightForget_1)
+
+  // Add random noise
+  // leftCollision =  coinFlip(leftCollision)
+  // rightCollision =  coinFlip(rightCollision)
+
+  // Didabot behavior
+  const angle = 0.01;
+  const forward = 0.0005;
+
+  leftAngle = leftCollision * angle;
+  rightAngle = rightCollision * angle;
+
+  direction = 0 + leftAngle - rightAngle;
 
   drive(robot, forward);
   rotate(robot, direction);
+
+  // console.log(leftCollision, rightCollision)
+  // console.log(leftWeights, rightWeights,  '\n')
 };
 
 function plotSensor(context, x = this.x, y = this.y) {
