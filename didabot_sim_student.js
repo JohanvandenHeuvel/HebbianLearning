@@ -17,6 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//__SimulationParameters__
+const RELOAD = true
+const LEARNING_RATE = 0.001
+const NR_BOXES = 4 //squared
+const BOX_MASS_MULTIPLYER = 100
+
+//__GlobalVars__
+var leftWeights = [0,0]
+var rightWeights = [0,0]
 
 
 //Hardcoding this shit
@@ -28,9 +37,6 @@ groupDistribution = [];
 boxesMoved = [];
 lastPositions = [];
 //fs = null;
-
-var leftWeights = [0,0]
-var rightWeights = [0,0]
 
 // Description of robot(s), and attached sensor(s) used by InstantiateRobot()
 const sensorlength = 30;
@@ -67,9 +73,9 @@ simInfo = {
   maxSteps: 20000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005,
-  boxMass: 1,  // mass of boxes
-  boxSize: 18,  // size of the boxes, in pixels
-  robotSize: 14,//2*7,  // robot radius, in pixels
+  boxMass: BOX_MASS_MULTIPLYER * 0.01,  // mass of boxes
+  boxSize: 20,  // size of the boxes, in pixels
+  robotSize: 2*7,  // robot radius, in pixels
   robotMass: 0.4, // robot mass (a.u)
   gravity: 0,  // constant acceleration in Y-direction
   bayRobot: null,  // currently selected robot
@@ -118,14 +124,14 @@ function init() {  // called once when loading HTML file
   /* Add a bunch of boxes in a neat grid. */
   function getBox(x, y) {
       //change the 3 to 4 or alot(circle)
-    return Matter.Bodies.polygon(350*Math.random() + 25, 350*Math.random() + 25, 4, simInfo.boxSize,
+    return Matter.Bodies.rectangle(x, y, simInfo.boxSize, simInfo.boxSize,
                                    {frictionAir: simInfo.airDrag,
                                     friction: simInfo.boxFric,
                                     mass: simInfo.boxMass,
                                     role: 'box'});
   };
   const startX = 100, startY = 100,
-        nBoxX = 5, nBoxY = 5,
+        nBoxX = NR_BOXES, nBoxY = NR_BOXES,
         gapX = 40, gapY = 30,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
@@ -577,7 +583,7 @@ function robotMove(robot) {
 
   //__Neural Awesomeness__
   var threshold = 1
-  var learningRate = 0.001
+  var learningRate = LEARNING_RATE
   var forgetRate = 0
 
   leftCollision = (leftTouch + (leftWeights[0]*leftDist + leftWeights[1]*rightDist)) >= threshold
@@ -752,6 +758,9 @@ function simStep() {
   else {
     exportExcel();
     toggleSimulation();
+    if(RELOAD){
+      location.reload();
+    }
   }
 
     log = function() {
