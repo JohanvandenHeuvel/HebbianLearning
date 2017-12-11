@@ -555,6 +555,7 @@ function getSensorValById(robot, id) {
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
 
+  //__Helper function__
   function coinFlip(outcome) {
     //outcome is the real value
     var sum = 0
@@ -564,6 +565,7 @@ function robotMove(robot) {
     return sum == 0
   }
 
+  //__MakingSense__
   robotUpdateSensors(robot)
   rightSens = robot.sensors[0];
   leftSens = robot.sensors[1];
@@ -573,38 +575,38 @@ function robotMove(robot) {
   leftTouch = leftSens.value.touch
   rightTouch = rightSens.value.touch
 
-  // Neural Awesomeness
+  //__Neural Awesomeness__
   var threshold = 1
   var learningRate = 0.001
   var forgetRate = 0
 
-  leftCollision = (leftTouch + (leftWeights[0]*leftDist +      leftWeights[1]*rightDist)) >= threshold
+  leftCollision = (leftTouch + (leftWeights[0]*leftDist + leftWeights[1]*rightDist)) >= threshold
   rightCollision = (rightTouch + (rightWeights[0]*leftDist + rightWeights[1]*rightDist)) >= threshold
 
-  learningRate = Math.abs(leftCollision-rightCollision) * learningRate
+  //To make sure that the cross Weights do not active constantly
+  if(leftCollision == 1 && rightCollision == 1){learningRate = 0}
 
   leftUpdate_0 = learningRate * leftDist * leftCollision
   leftForget_0 = forgetRate * leftCollision * leftWeights[0]
   leftWeights[0] = leftWeights[0] + (leftUpdate_0 - leftForget_0)
 
-  // Disabled cross connection learning
-  // leftUpdate_1 = learningRate * rightDist * leftCollision
-  // leftForget_1 = forgetRate * leftCollision * leftWeights[1]
-  // leftWeights[1] = leftWeights[1] + (leftUpdate_1 - leftForget_1)
-  //
-  // rightUpdate_0 = learningRate * leftDist * rightCollision
-  // rightForget_0 = forgetRate * rightCollision * rightWeights[0]
-  // rightWeights[0] = rightWeights[0] + (rightUpdate_0 - rightForget_0)
+  leftUpdate_1 = learningRate * rightDist * leftCollision
+  leftForget_1 = forgetRate * leftCollision * leftWeights[1]
+  leftWeights[1] = leftWeights[1] + (leftUpdate_1 - leftForget_1)
+
+  rightUpdate_0 = learningRate * leftDist * rightCollision
+  rightForget_0 = forgetRate * rightCollision * rightWeights[0]
+  rightWeights[0] = rightWeights[0] + (rightUpdate_0 - rightForget_0)
 
   rightUpdate_1 = learningRate * rightDist * rightCollision
   rightForget_1 = forgetRate * rightCollision * rightWeights[1]
   rightWeights[1] = rightWeights[1] + (rightUpdate_1 - rightForget_1)
 
-  // Add random noise
+  // Add random noise?
   // leftCollision =  coinFlip(leftCollision)
   // rightCollision =  coinFlip(rightCollision)
 
-  // Didabot behavior
+  //__Didabot behavior__
   const angle = 0.01;
   const forward = 0.0005;
 
@@ -613,16 +615,11 @@ function robotMove(robot) {
 
   direction = 0 + leftAngle - rightAngle;
 
-  console.log(leftCollision, rightCollision)
-  if(leftCollision == 1 && rightCollision == 1){
-    direction = 0.5
-  }
+  if(leftCollision == 1 && rightCollision == 1){direction = 0.5}
 
   drive(robot, forward);
   rotate(robot, direction);
 
-  // console.log(leftCollision, rightCollision)
-  // console.log(leftWeights, rightWeights,  '\n')
 };
 
 function plotSensor(context, x = this.x, y = this.y) {
