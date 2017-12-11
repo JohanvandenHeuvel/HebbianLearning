@@ -613,6 +613,11 @@ function robotMove(robot) {
 
   direction = 0 + leftAngle - rightAngle;
 
+  console.log(leftCollision, rightCollision)
+  if(leftCollision == 1 && rightCollision == 1){
+    direction = 0.5
+  }
+
   drive(robot, forward);
   rotate(robot, direction);
 
