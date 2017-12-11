@@ -17,7 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+//__SimulationParameters__
+const RELOAD = false
+const LEARNING_RATE = 0.01
 
 //Hardcoding this shit
 Boxes = []
@@ -577,7 +579,7 @@ function robotMove(robot) {
 
   //__Neural Awesomeness__
   var threshold = 1
-  var learningRate = 0.001
+  var learningRate = LEARNING_RATE
   var forgetRate = 0
 
   leftCollision = (leftTouch + (leftWeights[0]*leftDist + leftWeights[1]*rightDist)) >= threshold
@@ -752,6 +754,7 @@ function simStep() {
   else {
     exportExcel();
     toggleSimulation();
+    if(RELOAD){location.reload()}
   }
 
     log = function() {
