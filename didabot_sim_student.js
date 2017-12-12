@@ -29,6 +29,10 @@ amountOfHeaps = [];
 groupDistribution = [];
 boxesMoved = [];
 lastPositions = [];
+leftWeights0 = [];
+leftWeights1 = [];
+rightWeights0 = [];
+rightWeights1 = [];
 //fs = null;
 
 var leftWeights = [0,0]
@@ -810,6 +814,11 @@ function updateStatistics() {
     distribution[0] += (positions.length - positionsNotAtEdge.length)/ positions.length
     groupDistribution.push(distribution)
     lastPositions = positions.map(a => Object.assign({}, a));
+
+    leftWeights0.push(leftWeights[0]);
+    leftWeights1.push(leftWeights[1]);
+    rightWeights0.push(rightWeights[0]);
+    rightWeights1.push(rightWeights[1]);
 }
 
 function drawBoard() {
@@ -1008,8 +1017,8 @@ var saveAs=saveAs||function(e){"use strict";if(typeof e==="undefined"||typeof na
 
 function exportExcel()
 {
-    var data = [averageHeapSize,percentageInAHeap,amountOfHeaps];
-    var keys = ['AverageHeapSize', 'percentageInAHeap', "amountOfHeaps"];       //Weights should still be added
+    var data = [leftWeights0,leftWeights1,rightWeights0,rightWeights1,averageHeapSize,percentageInAHeap,amountOfHeaps];
+    var keys = ['leftWeight0', 'leftWeight1', 'rightWeight0', 'rightWeight1', 'AverageHeapSize', 'percentageInAHeap', "amountOfHeaps"];       //Weights should still be added
 
     var convertToCSV = function(data, keys) {
         var orderedData = [];
