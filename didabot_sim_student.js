@@ -619,7 +619,7 @@ function robotMove(robot) {
   leftAngle = leftCollision * angle;
   rightAngle = rightCollision * angle;
 
-  direction = 0 + leftAngle - rightAngle;
+  direction = 0 - leftAngle + rightAngle;
 
   if(leftCollision == 1 && rightCollision == 1){direction = 0.5}
 
