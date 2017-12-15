@@ -20,6 +20,8 @@
 //__SimulationParameters__
 const RELOAD = false
 const LEARNING_RATE = 0.01
+const FORGET_RATE = 0
+const robotNumber = 1;
 
 //Hardcoding this shit
 Boxes = []
@@ -29,15 +31,13 @@ amountOfHeaps = [];
 groupDistribution = [];
 boxesMoved = [];
 lastPositions = [];
-leftWeights0 = [];
-leftWeights1 = [];
-rightWeights0 = [];
-rightWeights1 = [];
+leftWeightsArr = [];
+rightWeightsArr = [];
 //fs = null;
 
-var leftWeights = [0,0]
-var rightWeights = [0,0]
-
+var leftWeights = 0
+var rightWeights = 0
+var runCount = 0;
 // Description of robot(s), and attached sensor(s) used by InstantiateRobot()
 const sensorlength = 30;
 
@@ -162,7 +162,7 @@ function init() {  // called once when loading HTML file
 
   /* Create robot(s). */
 //<<<<<<< Updated upstream
-  setRobotNumber(1);  // requires defined simInfo.world
+  setRobotNumber(robotNumber);  // requires defined simInfo.world
 //=======
   //setRobotNumber(1);  // requires defined simInfo.world
 //>>>>>>> Stashed changes
@@ -576,56 +576,41 @@ function robotMove(robot) {
   rightSens = robot.sensors[0];
   leftSens = robot.sensors[1];
 
-  leftDist = leftSens.value.dist == Infinity ? 0 : leftSens.value.dist;
-  rightDist = rightSens.value.dist == Infinity ? 0 :  rightSens.value.dist;
+  leftDist = leftSens.value.dist == Infinity ? 0 :  leftSens.maxVal-leftSens.value.dist//leftSens.value.dist;
+  rightDist = rightSens.value.dist == Infinity ? 0 :  rightSens.maxVal-rightSens.value.dist// rightSens.value.dist;
   leftTouch = leftSens.value.touch
   rightTouch = rightSens.value.touch
 
   //__Neural Awesomeness__
   var threshold = 1
   var learningRate = LEARNING_RATE
-  var forgetRate = 0
+  var forgetRate = FORGET_RATE
 
-  leftCollision = (leftTouch + (leftWeights[0]*leftDist + leftWeights[1]*rightDist)) >= threshold
-  rightCollision = (rightTouch + (rightWeights[0]*leftDist + rightWeights[1]*rightDist)) >= threshold
+  var sum = (leftTouch*0.1 - rightTouch*0.1 + leftWeights*leftDist + rightWeights*rightDist)
+  var angle =  Math.max(-0.5,Math.min(0.5,sum))
 
-  //To make sure that the cross Weights do not active constantly
-  if(leftCollision == 1 && rightCollision == 1){learningRate = 0}
+  leftUpdate_0 = learningRate * leftDist * angle
+  leftForget_0 = forgetRate * angle * leftWeights
+  leftWeights = leftWeights + (leftUpdate_0 - leftForget_0)
 
-  leftUpdate_0 = learningRate * leftDist * leftCollision
-  leftForget_0 = forgetRate * leftCollision * leftWeights[0]
-  leftWeights[0] = leftWeights[0] + (leftUpdate_0 - leftForget_0)
-
-  leftUpdate_1 = learningRate * rightDist * leftCollision
-  leftForget_1 = forgetRate * leftCollision * leftWeights[1]
-  leftWeights[1] = leftWeights[1] + (leftUpdate_1 - leftForget_1)
-
-  rightUpdate_0 = learningRate * leftDist * rightCollision
-  rightForget_0 = forgetRate * rightCollision * rightWeights[0]
-  rightWeights[0] = rightWeights[0] + (rightUpdate_0 - rightForget_0)
-
-  rightUpdate_1 = learningRate * rightDist * rightCollision
-  rightForget_1 = forgetRate * rightCollision * rightWeights[1]
-  rightWeights[1] = rightWeights[1] + (rightUpdate_1 - rightForget_1)
-
+  leftUpdate_1 = learningRate * rightDist * angle
+  leftForget_1 = forgetRate * angle * rightWeights
+    rightWeights = rightWeights + (leftUpdate_1 - leftForget_1)
   // Add random noise?
   // leftCollision =  coinFlip(leftCollision)
   // rightCollision =  coinFlip(rightCollision)
 
   //__Didabot behavior__
-  const angle = 0.01;
-  const forward = 0.0005;
 
-  leftAngle = leftCollision * angle;
-  rightAngle = rightCollision * angle;
-
-  direction = 0 - leftAngle + rightAngle;
-
-  if(leftCollision == 1 && rightCollision == 1){direction = 0.5}
+    console.log(angle)
+  const straightTres = 0.05,
+        forward = 0.0005;
+  if (Math.abs(angle) < straightTres && leftDist != 0 && rightDist != 0){
+     // angle = 0.08;
+  }
 
   drive(robot, forward);
-  rotate(robot, direction);
-
+  rotate(robot, angle);
 };
 
 function plotSensor(context, x = this.x, y = this.y) {
@@ -758,6 +743,14 @@ function simStep() {
   else {
     exportExcel();
     toggleSimulation();
+    leftWeights0=[]
+    leftWeights1=[]
+    rightWeights0=[]
+    rightWeights1=[]
+    averageHeapSize=[]
+    percentageInAHeap=[]
+    amountOfHeaps=[]
+    runCount = runCount + 1;
     if(RELOAD){location.reload()}
   }
 
@@ -815,10 +808,8 @@ function updateStatistics() {
     groupDistribution.push(distribution)
     lastPositions = positions.map(a => Object.assign({}, a));
 
-    leftWeights0.push(leftWeights[0]);
-    leftWeights1.push(leftWeights[1]);
-    rightWeights0.push(rightWeights[0]);
-    rightWeights1.push(rightWeights[1]);
+    leftWeightsArr.push(leftWeights);
+    rightWeightsArr.push(rightWeights);
 }
 
 function drawBoard() {
@@ -1017,8 +1008,8 @@ var saveAs=saveAs||function(e){"use strict";if(typeof e==="undefined"||typeof na
 
 function exportExcel()
 {
-    var data = [leftWeights0,leftWeights1,rightWeights0,rightWeights1,averageHeapSize,percentageInAHeap,amountOfHeaps];
-    var keys = ['leftWeight0', 'leftWeight1', 'rightWeight0', 'rightWeight1', 'AverageHeapSize', 'percentageInAHeap', "amountOfHeaps"];       //Weights should still be added
+    var data = [leftWeightsArr,rightWeightsArr, averageHeapSize ,percentageInAHeap,amountOfHeaps];
+    var keys = ['leftWeight', 'rightWeight', 'averageHeapSize', 'percentageInAHeap', "amountOfHeaps"];       //Weights should still be added
 
     var convertToCSV = function(data, keys) {
         var orderedData = [];
@@ -1042,7 +1033,7 @@ function exportExcel()
 
     var blob = new Blob([str], {type: "text/plain;charset=utf-8"});
     d = new Date();
-    var filename = "Hebbian Learning run at time " + d.toString();
+    var filename = "Hebbian Learning run at " + d.toTimeString().slice(0,8) + ", LR=" + LEARNING_RATE + ", FR=" + FORGET_RATE + ", bots=" + robotNumber
     if(filename!=null && filename!="")
         saveAs(blob, [filename+'.csv']);
     else
