@@ -18,7 +18,7 @@
  */
 
 //__SimulationParameters__
-const RELOAD = false
+const RELOAD = true
 const LEARNING_RATE = 0.01
 const FORGET_RATE = 0
 const robotNumber = 1;
@@ -74,7 +74,7 @@ simInfo = {
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005,
   boxMass: 1,  // mass of boxes
-  boxSize: 18,  // size of the boxes, in pixels
+  boxSize: 20,  // size of the boxes, in pixels
   robotSize: 14,//2*7,  // robot radius, in pixels
   robotMass: 0.4, // robot mass (a.u)
   gravity: 0,  // constant acceleration in Y-direction
@@ -576,8 +576,9 @@ function robotMove(robot) {
   rightSens = robot.sensors[0];
   leftSens = robot.sensors[1];
 
-    leftDist = leftSens.value.dist == Infinity ? 0 : leftSens.value.dist;
-    rightDist = rightSens.value.dist == Infinity ? 0 :  rightSens.value.dist;
+    leftDist = leftSens.value.dist == Infinity ? 0 : leftSens.maxVal - leftSens.value.dist;
+    rightDist = rightSens.value.dist == Infinity ? 0 : rightSens.maxVal - rightSens.value.dist;
+
     leftTouch = leftSens.value.touch
     rightTouch = rightSens.value.touch
 
@@ -1039,7 +1040,7 @@ function exportExcel()
 
     var blob = new Blob([str], {type: "text/plain;charset=utf-8"});
     d = new Date();
-    var filename = "Hebbian Learning run at " + d.toTimeString().slice(0,8) + ", LR=" + LEARNING_RATE + ", FR=" + FORGET_RATE + ", bots=" + robotNumber
+    var filename = "_:" + d.toTimeString().slice(0,8)
     if(filename!=null && filename!="")
         saveAs(blob, [filename+'.csv']);
     else
