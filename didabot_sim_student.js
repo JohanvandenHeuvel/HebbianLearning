@@ -596,14 +596,6 @@ function robotMove(robot) {
   leftForget_0 = forgetRate * leftCollision * leftWeights[0]
   leftWeights[0] = leftWeights[0] + (leftUpdate_0 - leftForget_0)
 
-  leftUpdate_1 = learningRate * rightDist * leftCollision
-  leftForget_1 = forgetRate * leftCollision * leftWeights[1]
-  leftWeights[1] = leftWeights[1] + (leftUpdate_1 - leftForget_1)
-
-  rightUpdate_0 = learningRate * leftDist * rightCollision
-  rightForget_0 = forgetRate * rightCollision * rightWeights[0]
-  rightWeights[0] = rightWeights[0] + (rightUpdate_0 - rightForget_0)
-
   rightUpdate_1 = learningRate * rightDist * rightCollision
   rightForget_1 = forgetRate * rightCollision * rightWeights[1]
   rightWeights[1] = rightWeights[1] + (rightUpdate_1 - rightForget_1)
@@ -621,7 +613,7 @@ function robotMove(robot) {
 
   direction = 0 - leftAngle + rightAngle;
 
-  if(leftCollision == 1 && rightCollision == 1){direction = 0.5}
+  if(leftCollision == 1 && rightCollision == 1){direction = 0.25}
 
   drive(robot, forward);
   rotate(robot, direction);
