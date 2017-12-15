@@ -576,41 +576,47 @@ function robotMove(robot) {
   rightSens = robot.sensors[0];
   leftSens = robot.sensors[1];
 
-  leftDist = leftSens.value.dist == Infinity ? 0 :  leftSens.maxVal-leftSens.value.dist//leftSens.value.dist;
-  rightDist = rightSens.value.dist == Infinity ? 0 :  rightSens.maxVal-rightSens.value.dist// rightSens.value.dist;
-  leftTouch = leftSens.value.touch
-  rightTouch = rightSens.value.touch
+    leftDist = leftSens.value.dist == Infinity ? 0 : leftSens.value.dist;
+    rightDist = rightSens.value.dist == Infinity ? 0 :  rightSens.value.dist;
+    leftTouch = leftSens.value.touch
+    rightTouch = rightSens.value.touch
 
-  //__Neural Awesomeness__
-  var threshold = 1
-  var learningRate = LEARNING_RATE
-  var forgetRate = FORGET_RATE
+    //__Neural Awesomeness__
+    var threshold = 1
+    var learningRate = LEARNING_RATE
+    var forgetRate = FORGET_RATE
 
-  var sum = (leftTouch*0.1 - rightTouch*0.1 + leftWeights*leftDist + rightWeights*rightDist)
-  var angle =  Math.max(-0.5,Math.min(0.5,sum))
+    leftCollision = (leftTouch + (leftWeights*leftDist)) >= threshold
+    rightCollision = (rightTouch + (rightWeights*rightDist)) >= threshold
 
-  leftUpdate_0 = learningRate * leftDist * angle
-  leftForget_0 = forgetRate * angle * leftWeights
-  leftWeights = leftWeights + (leftUpdate_0 - leftForget_0)
+    //To make sure that the cross Weights do not active constantly
+    if(leftCollision == 1 && rightCollision == 1){learningRate = 0}
 
-  leftUpdate_1 = learningRate * rightDist * angle
-  leftForget_1 = forgetRate * angle * rightWeights
-    rightWeights = rightWeights + (leftUpdate_1 - leftForget_1)
-  // Add random noise?
-  // leftCollision =  coinFlip(leftCollision)
-  // rightCollision =  coinFlip(rightCollision)
+    leftUpdate_0 = learningRate * leftDist * leftCollision
+    leftForget_0 = forgetRate * leftCollision * leftWeights
+    leftWeights = leftWeights + (leftUpdate_0 - leftForget_0)
 
-  //__Didabot behavior__
+    rightUpdate_1 = learningRate * rightDist * rightCollision
+    rightForget_1 = forgetRate * rightCollision * rightWeights
+    rightWeights = rightWeights + (rightUpdate_1 - rightForget_1)
 
-    console.log(angle)
-  const straightTres = 0.05,
-        forward = 0.0005;
-  if (Math.abs(angle) < straightTres && leftDist != 0 && rightDist != 0){
-     // angle = 0.08;
-  }
+    // Add random noise?
+    // leftCollision =  coinFlip(leftCollision)
+    // rightCollision =  coinFlip(rightCollision)
 
-  drive(robot, forward);
-  rotate(robot, angle);
+    //__Didabot behavior__
+    const angle = 0.01;
+    const forward = 0.0005;
+
+    leftAngle = leftCollision * angle;
+    rightAngle = rightCollision * angle;
+
+    direction = 0 + leftAngle - rightAngle;
+
+    if(leftCollision == 1 && rightCollision == 1){direction = 0.25}
+
+    drive(robot, forward);
+  rotate(robot, direction);
 };
 
 function plotSensor(context, x = this.x, y = this.y) {
