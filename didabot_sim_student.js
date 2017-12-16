@@ -18,8 +18,8 @@
  */
 
 //__SimulationParameters__
-const RELOAD = true
-const LEARNING_RATE = 0.01
+const RELOAD = false //Does not work
+const LEARNING_RATE = 0
 const FORGET_RATE = 0
 const robotNumber = 1;
 
