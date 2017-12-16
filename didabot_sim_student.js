@@ -19,9 +19,13 @@
 
 //__SimulationParameters__
 const RELOAD = false //Does not work
-const LEARNING_RATE = 0
+const LEARNING_RATE = 0.01 //10 simulations for 0, 0.001, 0.01 each
 const FORGET_RATE = 0
-const robotNumber = 1;
+const robotNumber = 1 //To increase number of robots look at the didabot assignment
+const FILENAME = "_" //Add prefix to the filename i.e. E1_1, E1_2, E1_3, after that _'timestamp' (timestamp added later)
+
+//For second expiriment do:
+//10 sumulations for 2,3,4 robots each, for the best performing learning rate of E1
 
 //Hardcoding this shit
 Boxes = []
@@ -589,16 +593,19 @@ function robotMove(robot) {
 
     leftCollision = (leftTouch + (leftWeights*leftDist)) >= threshold
     rightCollision = (rightTouch + (rightWeights*rightDist)) >= threshold
+    //According to forgetting formula
+    avgCollision = (leftCollision + rightCollision)/2 
 
     //To make sure that the cross Weights do not active constantly
     if(leftCollision == 1 && rightCollision == 1){learningRate = 0}
 
+
     leftUpdate_0 = learningRate * leftDist * leftCollision
-    leftForget_0 = forgetRate * leftCollision * leftWeights
+    leftForget_0 = forgetRate * avgCollision * leftWeights
     leftWeights = leftWeights + (leftUpdate_0 - leftForget_0)
 
     rightUpdate_1 = learningRate * rightDist * rightCollision
-    rightForget_1 = forgetRate * rightCollision * rightWeights
+    rightForget_1 = forgetRate * avgCollision * rightWeights
     rightWeights = rightWeights + (rightUpdate_1 - rightForget_1)
 
     // Add random noise?
@@ -606,8 +613,8 @@ function robotMove(robot) {
     // rightCollision =  coinFlip(rightCollision)
 
     //__Didabot behavior__
-    const angle = 0.01;
-    const forward = 0.0005;
+    const angle = 0.02;
+    const forward = 0.00035;
 
     leftAngle = leftCollision * angle;
     rightAngle = rightCollision * angle;
@@ -1040,7 +1047,7 @@ function exportExcel()
 
     var blob = new Blob([str], {type: "text/plain;charset=utf-8"});
     d = new Date();
-    var filename = "_:" + d.toTimeString().slice(0,8)
+    var filename = FILENAME + d.toTimeString().slice(0,8)
     if(filename!=null && filename!="")
         saveAs(blob, [filename+'.csv']);
     else
